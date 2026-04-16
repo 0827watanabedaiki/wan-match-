@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/places-api/:path*",
+      "destination": "https://places.googleapis.com/:path*"
+    },
+    {
+      "source": "/geocoding-api/:path*",
+      "destination": "https://maps.googleapis.com/:path*"
+    }
+  ]
+}
