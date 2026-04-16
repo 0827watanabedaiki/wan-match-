@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { MobileContainer } from './components/MobileContainer'
 import { AuthView } from './components/AuthView'
+import { OnboardingView } from './components/OnboardingView'
 import { supabase } from './lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import { Sun, Cloud, CloudRain, Snowflake, ArrowLeft } from 'lucide-react'
@@ -80,6 +81,7 @@ const WeatherNotification = ({ onClose, weatherDataMorning, weatherDataEvening, 
 function App() {
   const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
+  const [hasProfile, setHasProfile] = useState<boolean | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -88,9 +90,17 @@ function App() {
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
+      if (!session) setHasProfile(null)
     })
     return () => subscription.unsubscribe()
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+    supabase.from('dog_profiles').select('id').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      setHasProfile(!!data)
+    })
+  }, [user])
 
   const [currentTab, setCurrentTab] = useState('home')
 
@@ -239,8 +249,9 @@ function App() {
     setCurrentTab('calendar');
   };
 
-  if (authLoading) return null
+  if (authLoading || (user && hasProfile === null)) return null
   if (!user) return <MobileContainer><AuthView /></MobileContainer>
+  if (!hasProfile) return <MobileContainer><OnboardingView userId={user.id} onComplete={() => setHasProfile(true)} /></MobileContainer>
 
   return (
     <MobileContainer>
