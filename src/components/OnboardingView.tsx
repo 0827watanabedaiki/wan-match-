@@ -4,10 +4,34 @@ import { supabase } from '../lib/supabase'
 import { ChevronDown } from 'lucide-react'
 
 const BREEDS = [
-  'トイプードル', 'チワワ', '柴犬', 'ミニチュアダックス', 'ポメラニアン',
-  'ミニチュアシュナウザー', 'フレンチブルドッグ', 'ヨークシャーテリア', 'シーズー',
-  'マルチーズ', 'パグ', 'ゴールデンレトリバー', 'ラブラドール', 'コーギー',
-  'ボーダーコリー', 'ビーグル', '秋田犬', '豆柴', 'MIX犬', 'その他',
+  // 小型犬
+  'トイプードル', 'チワワ', 'ポメラニアン', 'ミニチュアダックスフンド',
+  'ヨークシャーテリア', 'マルチーズ', 'シーズー', 'パピヨン', 'ペキニーズ',
+  'イタリアングレーハウンド', 'ミニチュアピンシャー', 'アフェンピンシャー',
+  'キャバリア', 'ビションフリーゼ', 'ボロニーズ', 'ハバニーズ',
+  'ジャックラッセルテリア', 'ウェストハイランドホワイトテリア',
+  'スコティッシュテリア', 'ケアーンテリア', 'ノリッジテリア',
+  'トイマンチェスターテリア', 'イングリッシュトイスパニエル',
+  'プードル（ミニチュア）', 'プードル（トイ）',
+  // 中型犬
+  '柴犬', '豆柴', '四国犬', '紀州犬', '北海道犬',
+  'ビーグル', 'コーギー（ウェルシュ）', 'コーギー（カーディガン）',
+  'シェットランドシープドッグ', 'バセットハウンド', 'ブルドッグ',
+  'フレンチブルドッグ', 'パグ', 'ボストンテリア', 'シュナウザー（ミニチュア）',
+  'アメリカンコッカースパニエル', 'イングリッシュコッカースパニエル',
+  'スプリンガースパニエル', 'バセンジー', 'ウィペット',
+  'ポルトガルウォータードッグ', 'ラゴットロマニョーロ',
+  // 大型犬
+  'ゴールデンレトリバー', 'ラブラドールレトリバー', 'フラットコーテッドレトリバー',
+  'ボーダーコリー', 'シェパード（ジャーマン）', 'シベリアンハスキー',
+  'アラスカンマラミュート', 'サモエド', 'グレートピレニーズ',
+  'バーニーズマウンテンドッグ', 'ロットワイラー', 'ドーベルマン',
+  'ボクサー', 'ダルメシアン', 'ポインター', 'アイリッシュセッター',
+  'スタンダードプードル', 'アフガンハウンド', 'グレートデン',
+  'セントバーナード', 'ニューファンドランド', 'アイリッシュウルフハウンド',
+  '秋田犬', '甲斐犬', '土佐犬',
+  // MIX・その他
+  'MIX犬（小型）', 'MIX犬（中型）', 'MIX犬（大型）', 'その他',
 ]
 
 interface Props {
@@ -90,7 +114,7 @@ export const OnboardingView: React.FC<Props> = ({ userId, onComplete }) => {
                 type="text"
                 value={ownerName}
                 onChange={e => setOwnerName(e.target.value)}
-                placeholder="例：渡辺 大樹"
+                placeholder="例：山田 太郎"
                 className="w-full border border-dog-border rounded-xl px-4 py-3 text-sm text-gray-800 outline-none focus:border-dog-accent transition-colors"
               />
             </div>
@@ -171,14 +195,14 @@ export const OnboardingView: React.FC<Props> = ({ userId, onComplete }) => {
                     onClick={() => setGender('male')}
                     className={`flex-1 py-3 rounded-xl text-xs font-bold border transition-colors ${gender === 'male' ? 'bg-dog-accent text-white border-dog-accent' : 'border-dog-border text-gray-500'}`}
                   >
-                    オス
+                    ♂ オス
                   </button>
                   <button
                     type="button"
                     onClick={() => setGender('female')}
                     className={`flex-1 py-3 rounded-xl text-xs font-bold border transition-colors ${gender === 'female' ? 'bg-dog-accent text-white border-dog-accent' : 'border-dog-border text-gray-500'}`}
                   >
-                    メス
+                    ♀ メス
                   </button>
                 </div>
               </div>
