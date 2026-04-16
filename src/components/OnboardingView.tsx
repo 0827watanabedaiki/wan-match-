@@ -279,7 +279,7 @@ export const OnboardingView: React.FC<Props> = ({ userId, onComplete }) => {
               </div>
               <div className="flex-1">
                 <label className="text-xs font-bold text-gray-500 tracking-wide block mb-1">
-                  性別 <span className="text-dog-accent">*</span>
+                  性 <span className="text-dog-accent">*</span>
                 </label>
                 <div className="flex gap-2">
                   <button
