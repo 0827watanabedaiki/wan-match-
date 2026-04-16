@@ -1,35 +1,60 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Search, X } from 'lucide-react'
 
 const BREEDS = [
   // 小型犬
   'トイプードル', 'チワワ', 'ポメラニアン', 'ミニチュアダックスフンド',
   'ヨークシャーテリア', 'マルチーズ', 'シーズー', 'パピヨン', 'ペキニーズ',
   'イタリアングレーハウンド', 'ミニチュアピンシャー', 'アフェンピンシャー',
-  'キャバリア', 'ビションフリーゼ', 'ボロニーズ', 'ハバニーズ',
-  'ジャックラッセルテリア', 'ウェストハイランドホワイトテリア',
-  'スコティッシュテリア', 'ケアーンテリア', 'ノリッジテリア',
-  'トイマンチェスターテリア', 'イングリッシュトイスパニエル',
-  'プードル（ミニチュア）', 'プードル（トイ）',
+  'キャバリア・キング・チャールズ・スパニエル', 'ビションフリーゼ', 'ボロニーズ', 'ハバニーズ',
+  'ジャックラッセルテリア', 'パーソンラッセルテリア', 'ウェストハイランドホワイトテリア',
+  'スコティッシュテリア', 'ケアーンテリア', 'ノリッジテリア', 'ノーフォークテリア',
+  'ダンディディンモントテリア', 'スカイテリア', 'シルキーテリア',
+  'オーストラリアンテリア', 'トイフォックステリア', 'マンチェスターテリア（トイ）',
+  'ミニチュアプードル', 'トイプードル', 'アフェンピンシャー',
+  'ブリュッセルグリフォン', 'プチバセットグリフォンバンデーン',
+  'ロシアントイ', 'イングリッシュトイスパニエル',
+  'ジャパニーズチン', 'ラサアプソ', 'チベタンスパニエル',
+  'チベタンテリア', 'マルチーズ', 'ビアデットコリー（小）',
+  'スムースフォックステリア', 'ワイヤーフォックステリア',
+  'ミニチュアシュナウザー', 'セスキー・テリア',
   // 中型犬
-  '柴犬', '豆柴', '四国犬', '紀州犬', '北海道犬',
-  'ビーグル', 'コーギー（ウェルシュ）', 'コーギー（カーディガン）',
+  '柴犬', '豆柴', '四国犬', '紀州犬', '北海道犬', '越の犬',
+  'ビーグル', 'コーギー（ペンブローク）', 'コーギー（カーディガン）',
   'シェットランドシープドッグ', 'バセットハウンド', 'ブルドッグ',
-  'フレンチブルドッグ', 'パグ', 'ボストンテリア', 'シュナウザー（ミニチュア）',
+  'フレンチブルドッグ', 'パグ', 'ボストンテリア',
   'アメリカンコッカースパニエル', 'イングリッシュコッカースパニエル',
-  'スプリンガースパニエル', 'バセンジー', 'ウィペット',
-  'ポルトガルウォータードッグ', 'ラゴットロマニョーロ',
+  'スプリンガースパニエル（イングリッシュ）', 'スプリンガースパニエル（ウェルシュ）',
+  'バセンジー', 'ウィペット', 'ポルトガルウォータードッグ',
+  'ラゴットロマニョーロ', 'スタンダードシュナウザー',
+  'アメリカンスタッフォードシャーテリア', 'スタッフォードシャーブルテリア',
+  'ブルテリア（ミニチュア）', 'ケリーブルーテリア',
+  'アイリッシュソフトコーテッドウィートンテリア',
+  'ボーダーテリア', 'レイクランドテリア', 'ウェルシュテリア',
+  'ハリアー', 'バセンジー', 'シャー・ペイ', 'チャウチャウ',
+  'キースホンド', 'フィニッシュスピッツ', 'ノルウェジアンエルクハウンド',
+  'アメリカンウォータースパニエル', 'ササックスパニエル',
   // 大型犬
   'ゴールデンレトリバー', 'ラブラドールレトリバー', 'フラットコーテッドレトリバー',
-  'ボーダーコリー', 'シェパード（ジャーマン）', 'シベリアンハスキー',
+  'チェサピークベイレトリバー', 'ノバスコシアダックトーリングレトリバー',
+  'ボーダーコリー', 'ジャーマンシェパード', 'シベリアンハスキー',
   'アラスカンマラミュート', 'サモエド', 'グレートピレニーズ',
-  'バーニーズマウンテンドッグ', 'ロットワイラー', 'ドーベルマン',
-  'ボクサー', 'ダルメシアン', 'ポインター', 'アイリッシュセッター',
+  'バーニーズマウンテンドッグ', 'グレータースイスマウンテンドッグ',
+  'ロットワイラー', 'ドーベルマン', 'ボクサー', 'ダルメシアン',
+  'ポインター', 'ジャーマンショートヘアードポインター',
+  'アイリッシュセッター', 'イングリッシュセッター', 'ゴードンセッター',
   'スタンダードプードル', 'アフガンハウンド', 'グレートデン',
   'セントバーナード', 'ニューファンドランド', 'アイリッシュウルフハウンド',
-  '秋田犬', '甲斐犬', '土佐犬',
+  '秋田犬', '甲斐犬', '土佐犬', 'ビアデットコリー',
+  'オールドイングリッシュシープドッグ', 'ラフコリー', 'スムースコリー',
+  'ベルジアンマリノア', 'ベルジアンシェパード', 'ベルジアンタービュレン',
+  'ブービエデフランドル', 'ジャイアントシュナウザー',
+  'ドゴアルジェリアン', 'カネコルソ', 'ナポリタンマスティフ',
+  'ブルマスティフ', 'マスティフ', 'タイバンドッグ',
+  'ロデシアンリッジバック', 'ヴィズラ', 'ワイマラナー',
+  'アイリッシュウォータースパニエル', 'クランバースパニエル',
   // MIX・その他
   'MIX犬（小型）', 'MIX犬（中型）', 'MIX犬（大型）', 'その他',
 ]
@@ -51,6 +76,11 @@ export const OnboardingView: React.FC<Props> = ({ userId, onComplete }) => {
   const [dogName, setDogName] = useState('')
   const [breed, setBreed] = useState('')
   const [showBreedPicker, setShowBreedPicker] = useState(false)
+  const [breedSearch, setBreedSearch] = useState('')
+
+  const filteredBreeds = useMemo(() =>
+    breedSearch ? BREEDS.filter(b => b.includes(breedSearch)) : BREEDS
+  , [breedSearch])
   const [age, setAge] = useState('')
   const [gender, setGender] = useState<'male' | 'female' | ''>('')
   const [bio, setBio] = useState('')
@@ -148,24 +178,48 @@ export const OnboardingView: React.FC<Props> = ({ userId, onComplete }) => {
               </label>
               <button
                 type="button"
-                onClick={() => setShowBreedPicker(!showBreedPicker)}
+                onClick={() => { setShowBreedPicker(!showBreedPicker); setBreedSearch('') }}
                 className="w-full border border-dog-border rounded-xl px-4 py-3 text-sm text-left flex items-center justify-between outline-none focus:border-dog-accent transition-colors"
               >
                 <span className={breed ? 'text-gray-800' : 'text-gray-400'}>{breed || '犬種を選択'}</span>
                 <ChevronDown size={16} className="text-gray-400" />
               </button>
               {showBreedPicker && (
-                <div className="border border-dog-border rounded-xl mt-1 max-h-40 overflow-y-auto shadow-md">
-                  {BREEDS.map(b => (
-                    <button
-                      key={b}
-                      type="button"
-                      onClick={() => { setBreed(b); setShowBreedPicker(false) }}
-                      className="w-full text-left px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50"
-                    >
-                      {b}
-                    </button>
-                  ))}
+                <div className="border border-dog-border rounded-xl mt-1 shadow-md overflow-hidden">
+                  {/* 検索欄 */}
+                  <div className="flex items-center gap-2 px-3 py-2 border-b border-dog-border">
+                    <Search size={14} className="text-gray-400 shrink-0" />
+                    <input
+                      type="text"
+                      value={breedSearch}
+                      onChange={e => setBreedSearch(e.target.value)}
+                      placeholder="犬種を検索..."
+                      className="flex-1 text-sm text-gray-800 outline-none"
+                      autoFocus
+                    />
+                    {breedSearch && (
+                      <button type="button" onClick={() => setBreedSearch('')}>
+                        <X size={14} className="text-gray-400" />
+                      </button>
+                    )}
+                  </div>
+                  {/* リスト */}
+                  <div className="max-h-48 overflow-y-auto">
+                    {filteredBreeds.length === 0 ? (
+                      <p className="text-sm text-gray-400 text-center py-4">見つかりません</p>
+                    ) : (
+                      filteredBreeds.map(b => (
+                        <button
+                          key={b}
+                          type="button"
+                          onClick={() => { setBreed(b); setShowBreedPicker(false); setBreedSearch('') }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50"
+                        >
+                          {b}
+                        </button>
+                      ))
+                    )}
+                  </div>
                 </div>
               )}
             </div>
