@@ -60,6 +60,27 @@ const BREEDS = [
   'MIX犬（小型）', 'MIX犬（中型）', 'MIX犬（大型）', 'その他',
 ]
 
+// ひらがな→カタカナ変換
+const toKatakana = (str: string) =>
+  str.replace(/[\u3041-\u3096]/g, ch => String.fromCharCode(ch.charCodeAt(0) + 0x60))
+
+// 漢字犬種の読み仮名（カタカナ）
+const BREED_READINGS: Record<string, string> = {
+  '柴犬': 'シバケン',
+  '豆柴': 'マメシバ',
+  '四国犬': 'シコクケン',
+  '紀州犬': 'キシュウケン',
+  '北海道犬': 'ホッカイドウケン',
+  '越の犬': 'コシノイヌ',
+  '秋田犬': 'アキタケン',
+  '甲斐犬': 'カイケン',
+  '土佐犬': 'トサケン',
+  'MIX犬（小型）': 'ミックスケンショウガタ',
+  'MIX犬（中型）': 'ミックスケンチュウガタ',
+  'MIX犬（大型）': 'ミックスケンオオガタ',
+  'その他': 'ソノタ',
+}
+
 interface Props {
   userId: string
   onComplete: () => void
@@ -81,11 +102,22 @@ export const OnboardingView: React.FC<Props> = ({ userId, onComplete }) => {
 
   const filteredBreeds = useMemo(() => {
     if (!breedSearch) return BREEDS
-    const q = breedSearch
-    const exact = BREEDS.filter(b => b === q)
-    const prefix = BREEDS.filter(b => b !== q && b.startsWith(q))
-    const contains = BREEDS.filter(b => !b.startsWith(q) && b.includes(q))
-    return [...exact, ...prefix, ...contains]
+    const q = toKatakana(breedSearch)
+
+    const score = (b: string) => {
+      const kb = toKatakana(b)
+      const reading = BREED_READINGS[b] || ''
+      if (kb === q || reading === q || b === breedSearch) return 0        // 完全一致
+      if (kb.startsWith(q) || reading.startsWith(q)) return 1            // 前方一致
+      if (kb.includes(q) || reading.includes(q) || b.includes(breedSearch)) return 2 // 部分一致
+      return 99
+    }
+
+    return BREEDS
+      .map(b => ({ b, s: score(b) }))
+      .filter(x => x.s < 99)
+      .sort((a, z) => a.s - z.s)
+      .map(x => x.b)
   }, [breedSearch])
   const [age, setAge] = useState('')
   const [gender, setGender] = useState<'male' | 'female' | ''>('')
