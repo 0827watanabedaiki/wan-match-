@@ -1,6 +1,6 @@
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
 
-export type SpotCategory = 'all' | 'run' | 'park' | 'salon' | 'hospital' | 'cafe';
+export type SpotCategory = 'all' | 'run' | 'park' | 'salon' | 'hospital' | 'cafe' | 'hotel';
 
 export interface PlaceSpot {
     id: string;
@@ -36,6 +36,7 @@ const SEARCH_KEYWORDS: Record<Exclude<SpotCategory, 'all'>, string[]> = {
     salon:    ['トリミングサロン', 'ペットサロン'],
     hospital: ['動物病院'],
     cafe:     ['ドッグカフェ', 'ペットカフェ'],
+    hotel:    ['ペットホテル'],
 };
 
 const FIELD_MASK = [
@@ -111,7 +112,7 @@ export const fetchNearbySpots = async (
     category: SpotCategory = 'all',
 ): Promise<PlaceSpot[]> => {
     const targetCategories: Exclude<SpotCategory, 'all'>[] =
-        category === 'all' ? ['run', 'park', 'salon', 'hospital'] : [category];
+        category === 'all' ? ['run', 'park', 'salon', 'hospital', 'cafe', 'hotel'] : [category];
 
     const results = await Promise.allSettled(
         targetCategories.flatMap(cat =>

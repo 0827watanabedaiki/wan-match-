@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Star, X, Clock, Loader2, Navigation, RefreshCcw, Globe, Search, Map } from 'lucide-react';
+import { MapPin, Star, X, Clock, Loader2, Navigation, RefreshCcw, Globe, Search, Map, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchNearbySpots, geocodeAddress, PlaceSpot, SpotCategory } from '../services/placesService';
 import { MapPickerModal } from './MapPickerModal';
 
 const CATEGORIES: { id: SpotCategory; label: string }[] = [
-    { id: 'all',      label: 'すべて'     },
-    { id: 'run',      label: 'ドッグラン' },
-    { id: 'park',     label: '公園'       },
-    { id: 'cafe',     label: 'カフェ'     },
-    { id: 'salon',    label: 'サロン'     },
-    { id: 'hospital', label: '病院'       },
+    { id: 'all',      label: 'すべて'       },
+    { id: 'run',      label: 'ドッグラン'   },
+    { id: 'park',     label: '公園'         },
+    { id: 'cafe',     label: 'カフェ'       },
+    { id: 'salon',    label: 'サロン'       },
+    { id: 'hospital', label: '病院'         },
+    { id: 'hotel',    label: 'ペットホテル' },
 ];
 
 const CATEGORY_LABELS: Record<SpotCategory, string> = {
@@ -20,6 +21,7 @@ const CATEGORY_LABELS: Record<SpotCategory, string> = {
     cafe:     'ドッグカフェ',
     salon:    'サロン',
     hospital: '病院',
+    hotel:    'ペットホテル',
 };
 
 interface SpotDirectoryViewProps {
@@ -38,6 +40,24 @@ export const SpotDirectoryView: React.FC<SpotDirectoryViewProps> = ({ initialCat
     const [showMapPicker, setShowMapPicker] = useState(false);
     const [selected, setSelected]     = useState<PlaceSpot | null>(null);
     const [hasSearched, setHasSearched] = useState(false);
+    const [favorites, setFavorites] = useState<Set<string>>(() => {
+        const saved = localStorage.getItem('favoriteSpots');
+        return saved ? new Set(JSON.parse(saved)) : new Set();
+    });
+
+    const toggleFavorite = (spot: PlaceSpot, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setFavorites(prev => {
+            const next = new Set(prev);
+            if (next.has(spot.id)) {
+                next.delete(spot.id);
+            } else {
+                next.add(spot.id);
+            }
+            localStorage.setItem('favoriteSpots', JSON.stringify([...next]));
+            return next;
+        });
+    };
 
     const filtered = category === 'all'
         ? spots
@@ -281,12 +301,17 @@ export const SpotDirectoryView: React.FC<SpotDirectoryViewProps> = ({ initialCat
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-start justify-between gap-2 mb-1">
                                                     <h3 className="font-extrabold text-gray-900 text-sm leading-tight">{spot.name}</h3>
-                                                    {spot.rating && (
-                                                        <div className="flex items-center gap-0.5 shrink-0">
-                                                            <Star size={11} className="text-yellow-400 fill-yellow-400" />
-                                                            <span className="text-[11px] font-extrabold text-gray-700">{spot.rating.toFixed(1)}</span>
-                                                        </div>
-                                                    )}
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        {spot.rating && (
+                                                            <div className="flex items-center gap-0.5">
+                                                                <Star size={11} className="text-yellow-400 fill-yellow-400" />
+                                                                <span className="text-[11px] font-extrabold text-gray-700">{spot.rating.toFixed(1)}</span>
+                                                            </div>
+                                                        )}
+                                                        <button onClick={e => toggleFavorite(spot, e)} className="active:scale-90 transition-transform">
+                                                            <Heart size={16} strokeWidth={2} className={favorites.has(spot.id) ? 'fill-red-400 text-red-400' : 'text-gray-300'} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <span className="text-[10px] font-extrabold text-gray-500 border border-gray-300 px-1.5 py-0.5 rounded-sm tracking-wider">
                                                     {CATEGORY_LABELS[spot.category]}
@@ -349,6 +374,12 @@ export const SpotDirectoryView: React.FC<SpotDirectoryViewProps> = ({ initialCat
                                     className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow"
                                 >
                                     <X size={18} strokeWidth={2.5} />
+                                </button>
+                                <button
+                                    onClick={e => toggleFavorite(selected, e)}
+                                    className="absolute top-4 left-4 bg-white/90 p-2 rounded-full shadow active:scale-90 transition-transform"
+                                >
+                                    <Heart size={18} strokeWidth={2} className={favorites.has(selected.id) ? 'fill-red-400 text-red-400' : 'text-gray-400'} />
                                 </button>
                                 {selected.isOpen !== undefined && (
                                     <span className={`absolute bottom-4 left-4 text-[10px] font-extrabold px-2 py-1 rounded-full ${selected.isOpen ? 'bg-gray-900 text-white' : 'bg-gray-200 text-gray-600'}`}>
